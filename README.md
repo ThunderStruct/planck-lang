@@ -1,5 +1,5 @@
 
-# ![Planck Logo](https://i.imgur.com/iXfjUbP.png)
+<img src="https://i.imgur.com/iXfjUbP.png" alt="Planck Logo" width="200">
 
 # Planck Language
 
