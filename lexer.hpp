@@ -6,8 +6,6 @@
 //  Copyright © 2018 Mohamed Shahawy. All rights reserved.
 //
 
-// [DEPRECATED - we use Flex instead]
-
 #ifndef lexer_hpp
 #define lexer_hpp
 
@@ -15,9 +13,7 @@
 #include <vector>
 #include "token.hpp"
 
-
 class lexer {
-    
 public:
     lexer(const std::string& source);
     std::vector<token> scanTokens();
@@ -40,6 +36,7 @@ private:
     void number();
     void identifier();
     void skipWhitespace();
+    void addErrorToken(const std::string& message);
 };
 
 #endif /* lexer_hpp */

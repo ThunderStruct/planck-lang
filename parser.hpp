@@ -60,7 +60,7 @@ private:
     static token next();
     
 public:
-    static void initTokens(bool reset);
+    static void initTokens(const std::vector<token>& tokens, bool reset);
     static void parse();
     static void parseAndExecute();
     static void traverse();

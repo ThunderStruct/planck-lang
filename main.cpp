@@ -15,7 +15,7 @@
 #include <fstream>
 #include <vector>
 #include "parser.hpp"
-#include "planck.lex.hpp"
+#include "lexer.hpp"
 
 // Prototypes
 void runInterpreter();
@@ -51,30 +51,28 @@ int main(int argc, const char * argv[]) {
         return 1;
     }
     testFile.close();
-    
-    // Set up Flex to read from the input file
-    FILE* inputFile = fopen(ifPath.c_str(), "r");
-    if (!inputFile) {
-        std::cerr << "\nError opening file! Terminating...\n";
-        return 1;
-    }
-    yyin = inputFile;
 
-    // Parse the file content
+    // Read the file content
+    std::ifstream inputFile(ifPath);
+    std::string fileContent((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
+    inputFile.close();
+
+    // Tokenize the file content
+    lexer lex(fileContent);
+    std::vector<token> programTokens = lex.scanTokens();
+
+    // Parse and execute the file content
     try {
-        parser::initTokens(true);
+        parser::initTokens(programTokens, true);
         parser::parseAndExecute();
     } catch (const std::string& msg) {
         std::cerr << msg << std::endl;
-        fclose(inputFile);
         return 2;
     }
 
-    fclose(inputFile);
     parser::printSymbolTable();
     return 0;
 }
-
 
 // Function definitions
 void runInterpreter() {
@@ -89,18 +87,18 @@ void runInterpreter() {
 
         if (line == "exit") break;
 
-        YY_BUFFER_STATE bufferState = yy_scan_string(line.c_str());
-        
-        // Parse and execute the line
+        // Tokenize the input line
+        lexer lex(line);
+        std::vector<token> programTokens = lex.scanTokens();
+
+        // Parse and execute the input line
         try {
-            parser::initTokens(false);
+            parser::initTokens(programTokens, false);
             parser::parseAndExecute();
         } catch (const std::string& msg) {
             std::cerr << msg << std::endl;
         }
 
-        yy_delete_buffer(bufferState);
-        
-        parser::printSymbolTable();
+        // parser::printSymbolTable();
     }
 }

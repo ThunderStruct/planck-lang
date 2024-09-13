@@ -1,11 +1,12 @@
 
-<img src="https://i.imgur.com/iXfjUbP.png" alt="Planck Logo" width="200">
+<img src="https://i.imgur.com/iXfjUbP.png" alt="Planck Logo" width="250">
 
 # Planck Language
 
+**Planck** is an esoteric, minimal language created as a hobby project as part of my _Compiler Design_ course during my undergrad. Recently branded and open-sourced just for fun!
 
 
-## EBNF Grammar for Planck
+## The Extended Backus-Naur Form Grammar for Planck
 
 ```ebnf
 <program> ::= <statement_list>
@@ -111,7 +112,7 @@ Calls the method `x` with the argument `y`.
 
 ## Planck Interpreter
 
-The Planck interpreter is built using Flex as the lexer and a custom C++ parser to evaluate expressions and manage symbol tables.
+The Planck interpreter is built purely using C++, and is split into 3 fundamental components: a custom lexer (Flex configuration is also implemented), a parser to evaluate expressions, and a symbol table to manage and track identifiers.
 
 ### Lexer
 

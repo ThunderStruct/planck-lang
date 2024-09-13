@@ -9,10 +9,6 @@
 #include "parser.hpp"
 #include <iostream>
 
-extern int yylex();
-extern char* yytext;
-extern int lineno, colno;
-
 // OBJECTS' DEFINITIONS
 const std::string parser::tokenStrings[26] = {                  // USED FOR ERROR-REPORTING
     "id", "num",
@@ -32,27 +28,20 @@ const std::vector<token::terminal> parser::firstSet[15] {        // USED FOR LOO
     { token::terminal::IDENTIFIER },                             // first(method_call)
     { token::terminal::PLUS, token::terminal::MINUS },           // first(addop)
     { token::terminal::STAR, token::terminal::SLASH },           // first(mulop)
-    { token::terminal::LESS_THAN, 
+    { token::terminal::LESS_THAN,
       token::terminal::GREATER_THAN, token::terminal::EQUAL },   // first(relop)
 };
 
-
-int parser::cursor;
+int parser::cursor = 0;
 std::vector<token> parser::programTokens;
 token parser::currentToken, parser::prevToken;
 bool parser::debugMode = false;
-node *parser::head;
+node *parser::head = nullptr;
 symbolTable parser::symTable;
 
 // SUPPORT METHODS
-void parser::initTokens(bool reset=false) {
-    
-    int tokenId;
-    while ((tokenId = yylex()) != 0) {
-        std::cout << tokenId << lineno << colno << yytext << '\n';
-        programTokens.push_back(token(tokenId, lineno, colno, yytext));
-    }
-    
+void parser::initTokens(const std::vector<token>& tokens, bool reset) {
+    programTokens = tokens;
     if (reset) {
         cursor = 0;
         currentToken = next();
@@ -66,7 +55,6 @@ void parser::parse() {
     head = program();
     
     if (debugMode) {
-        // Force traverse the generated parse tree
         std::cout << "\nDEBUG Traversal Starting:\n===================\n";
         debugTraversal(head);
         std::cout << '\n';
@@ -74,20 +62,17 @@ void parser::parse() {
 }
 
 void parser::parseAndExecute() {
-    currentToken = next();  // Init first token
+    currentToken = next();
 
-    while (currentToken.id != token::terminal::UNKNOWN) {
+    while (currentToken.id != token::terminal::EOF_TOKEN) {
         node* stmt = statement();
-        if (stmt != nullptr) {
-            // Handle the output for the interactive mode
-            if (stmt->tkn.id == token::terminal::PERCENT_SIGN) {
-                std::string varName = stmt->left->tkn.lexeme;
-                symbol* sym = symTable.lookup(varName.c_str());
-                if (sym != nullptr && sym->initialized) {
-                    std::cout << sym->id() << " = " << sym->val << std::endl;
-                } else {
-                    std::cerr << "Error: Variable " << varName << " not found or not initialized." << std::endl;
-                }
+        if (stmt != nullptr && stmt->tkn.id == token::terminal::PERCENT_SIGN) {
+            std::string varName = stmt->left->tkn.lexeme;
+            symbol* sym = symTable.lookup(varName.c_str());
+            if (sym != nullptr && sym->initialized) {
+                std::cout << sym->id() << " = " << sym->val << std::endl;
+            } else {
+                std::cerr << "Error: Variable " << varName << " not found or not initialized." << std::endl;
             }
         }
         currentToken = next();
@@ -286,10 +271,8 @@ node* parser::method_call() {
     return new node(varToken, method, nullptr);
 }
 
-
 node* parser::expression_stmt() {
     if (currentToken.id == token::terminal::IDENTIFIER) {
-        // potential assignment
         token varToken = currentToken;
         match(token::terminal::IDENTIFIER);
 
@@ -307,20 +290,16 @@ node* parser::expression_stmt() {
             if (valueNode->tkn.id == token::terminal::NUMBER) {
                 sym->val = std::stof(valueNode->tkn.lexeme);
             }
-            // currently only handling number terminals, will add more here
 
             return new node(varToken, nullptr, valueNode);
         } else {
-            // an expression involving an identifier but isn't an assignment
             return new node(varToken);
         }
     } else {
-        // non-assignment expression
         node* expr = expression();
         return expr;
     }
 }
-
 
 node* parser::expression() {
     return simple_expression();
@@ -420,4 +399,3 @@ node* parser::mulop() {
     }
     return new node(prev);
 }
-
