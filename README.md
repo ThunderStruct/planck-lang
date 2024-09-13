@@ -120,11 +120,12 @@ We use Flex to tokenize the input into various tokens like identifiers, numbers,
 
 ### Parser
 
-The parser implements the EBNF grammar for Planck, breaking down each line into statements, expressions, and operators. It is responsible for evaluating expressions and managing the program’s execution flow.
+The parser uses _recursive descent_ techniques to break down the tokenized input according to Planck's EBNF grammar. It evaluates statements like assignments, loops, conditionals, and expressions, constructing an abstract syntax tree (AST) and managing control flow. It checks for syntax and semantic errors, ensuring valid execution.
 
 ### Symbol Table
 
-A symbol table is maintained to store variables and their associated values. The symbol table is updated during assignments and used during method calls, loops, and conditionals.
+The symbol table in Planck is implemented using a hash table. After implementing both the symbol and symbolTable classes, it was important to integrate the new data structure with the parser.
 
+The symbol table insertion starts in `parser::expression_stmt`, where assignments are matched. When a variable is assigned, its name, line number, and value are stored as a symbol object and inserted into the table.
 
-
+To check for variable declarations before usage, a simple `lookup()` call in the expression production rule ensures that variables exist before they are used. If not found, an error is raised.
